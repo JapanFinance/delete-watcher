@@ -44,8 +44,10 @@ Data is stored in the Redis datastore provided and hosted by Reddit's Developer 
 The app does not operate any separate database or send data to any server run by the
 developer.
 
-- **Post snapshots** are automatically deleted after the detection window plus a 24-hour
-  margin.
+- **Post snapshots** are automatically deleted once the detection window has elapsed, plus
+  a short buffer of about 15 minutes to allow for event-delivery timing. For example, with
+  the default 24-hour window, a snapshot is removed roughly 24 hours after the post is
+  made; with a 30-minute window, roughly 45 minutes after.
 - **Duplicate-event markers** are automatically deleted after about 7 days.
 - **Per-author self-delete counts** are retained until the app is uninstalled or the
   moderators clear them. These are counts and identifiers, not post content.
