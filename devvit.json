@@ -51,5 +51,8 @@
         "discordapp.com"
       ]
     }
+  },
+  "dev": {
+    "subreddit": "delete_watcher_dev"
   }
 }
