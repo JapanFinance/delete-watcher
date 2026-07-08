@@ -21,34 +21,3 @@ Each author's self-delete count is tracked persistently, so notifications read "
 | Discord webhook URL | *(empty)* | Webhook to notify. Empty disables Discord notifications. |
 | Send Discord notifications | on | Toggle the Discord action. |
 | Add a mod note to the author | on | Toggle the mod note action. |
-
-## Implementation notes
-
-- Devvit Web app (server only, no UI) based on the official [Mod Tool template](https://github.com/reddit/devvit-template-mod-tool-devvit-web): Hono server + `devvit.json`.
-- `onPostDelete`'s `source` field distinguishes author self-deletes (`USER`) from mod/admin removals.
-- Trigger delivery is at-least-once, so the delete handler atomically claims each post via `redis.hSetNX` **before** any side effect, and rolls the claim (and counter) back if every action fails, letting redelivery retry. See [LilSpazJoekp/discord-relay#7](https://github.com/LilSpazJoekp/discord-relay/pull/7) for the pattern's origin.
-- Snapshots live in Redis with a TTL of the detection window plus a 24h margin. If a snapshot is missing (post predates install, or the window was raised), detection still works from the event's own timestamps — the notification just says "(content not captured)".
-
-```
-src/
-├── index.ts             # Hono server setup
-├── core/
-│   ├── detect.ts        # Pure detection logic (source + window check)
-│   ├── snapshot.ts      # Post content snapshots in Redis
-│   ├── discord.ts       # Webhook embed
-│   ├── modnote.ts       # SPAM_WATCH mod note
-│   ├── settings.ts      # Typed settings access + validation rules
-│   ├── keys.ts          # Redis key schema
-│   └── format.ts        # Duration/truncation helpers
-└── routes/
-    ├── triggers.ts      # onPostSubmit / onPostDelete handlers
-    ├── settings.ts      # Settings validation endpoints
-    └── api.ts           # (unused) public API router
-```
-
-## Development
-
-- `npm run dev` — playtest with live reload on a test subreddit
-- `npm run type-check` / `npm run lint` — TypeScript and ESLint checks
-- `npm run deploy` — upload a new version
-- `npm run launch` — submit for review and publish
