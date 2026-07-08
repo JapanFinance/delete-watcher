@@ -11,6 +11,12 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # devvit 1.0.0 is a stray/mistaken publish that outranks the real 0.13.x
+      # line by semver. Ignore it so Dependabot doesn't try to "upgrade" to it.
+      - dependency-name: "devvit"
+        versions: ["1.0.0"]
+      - dependency-name: "@devvit/*"
+        versions: ["1.0.0"]
     groups:
       devvit:
         patterns:
