@@ -54,6 +54,19 @@ developer.
 
 Uninstalling the app from a subreddit ends all further processing for that subreddit.
 
+## Operational logs
+
+As it runs, the app writes brief operational log lines — for example, that a post was
+flagged, or the reason a deletion was skipped. These log lines can include post IDs, the
+author's username, timing, the self-delete count, and technical error details when an
+action fails. They do **not** include the post's title or body.
+
+These logs are part of Reddit's Developer Platform. They are visible to the moderators of
+the subreddit where the app is installed (through the platform's app-logs tooling), and to
+the app's developer if they stream the app's logs for debugging or troubleshooting. They
+are retained by Reddit's Developer Platform under its own log handling, not stored in the
+app's own datastore.
+
 ## Sharing with third parties
 
 If — and only if — a subreddit's moderators configure a Discord webhook URL in the app's
