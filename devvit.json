@@ -46,10 +46,7 @@
     "redis": true,
     "http": {
       "enable": true,
-      "domains": [
-        "discord.com",
-        "discordapp.com"
-      ]
+      "domains": ["discord.com", "discordapp.com"]
     }
   },
   "dev": {

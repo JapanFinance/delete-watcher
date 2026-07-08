@@ -1,5 +1,9 @@
 import { redis } from '@devvit/web/server';
-import { SNAPSHOT_BODY_MAX_CHARS, SNAPSHOT_TTL_MARGIN_SECONDS, snapKey } from './keys';
+import {
+  SNAPSHOT_BODY_MAX_CHARS,
+  SNAPSHOT_TTL_MARGIN_SECONDS,
+  snapKey,
+} from './keys';
 import { truncate } from './format';
 
 export type PostSnapshot = {
@@ -25,13 +29,17 @@ export async function saveSnapshot(
     title: snapshot.title,
     body: truncate(snapshot.body, SNAPSHOT_BODY_MAX_CHARS),
   };
-  if (snapshot.createdAtMs !== undefined) fields.createdAtMs = String(snapshot.createdAtMs);
+  if (snapshot.createdAtMs !== undefined)
+    fields.createdAtMs = String(snapshot.createdAtMs);
   if (snapshot.authorId) fields.authorId = snapshot.authorId;
   if (snapshot.authorName) fields.authorName = snapshot.authorName;
 
   const key = snapKey(postId);
   await redis.hSet(key, fields);
-  await redis.expire(key, Math.ceil(windowHours * 3600) + SNAPSHOT_TTL_MARGIN_SECONDS);
+  await redis.expire(
+    key,
+    Math.ceil(windowHours * 3600) + SNAPSHOT_TTL_MARGIN_SECONDS
+  );
 }
 
 export async function loadSnapshot(postId: string): Promise<PostSnapshot> {
@@ -43,7 +51,8 @@ export async function loadSnapshot(postId: string): Promise<PostSnapshot> {
   return {
     title: fields.title,
     body: fields.body,
-    createdAtMs: Number.isFinite(createdAtMs) && createdAtMs > 0 ? createdAtMs : undefined,
+    createdAtMs:
+      Number.isFinite(createdAtMs) && createdAtMs > 0 ? createdAtMs : undefined,
     authorId: fields.authorId,
     authorName: fields.authorName,
   };

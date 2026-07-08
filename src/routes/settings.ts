@@ -1,6 +1,13 @@
 import { Hono } from 'hono';
-import type { SettingsValidationRequest, SettingsValidationResponse } from '@devvit/web/shared';
-import { isValidWindowHours, MAX_WINDOW_HOURS, WEBHOOK_URL_PATTERN } from '../core/settings';
+import type {
+  SettingsValidationRequest,
+  SettingsValidationResponse,
+} from '@devvit/web/shared';
+import {
+  isValidWindowHours,
+  MAX_WINDOW_HOURS,
+  WEBHOOK_URL_PATTERN,
+} from '../core/settings';
 
 export const settingsRoutes = new Hono();
 

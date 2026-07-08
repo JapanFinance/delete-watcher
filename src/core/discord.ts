@@ -15,14 +15,19 @@ export type QuickDeleteAlert = {
 };
 
 /** Throws on network failure or non-2xx so the caller can count the action as failed. */
-export async function sendDiscordAlert(webhookUrl: string, alert: QuickDeleteAlert): Promise<void> {
+export async function sendDiscordAlert(
+  webhookUrl: string,
+  alert: QuickDeleteAlert
+): Promise<void> {
   const author = alert.authorName ?? 'unknown author';
   const descriptionParts: string[] = [];
   if (alert.title) {
     descriptionParts.push(`**${truncate(alert.title, 250)}**`);
   }
   descriptionParts.push(
-    alert.body ? `>>> ${truncate(alert.body, EXCERPT_MAX_CHARS)}` : '_(content not captured)_'
+    alert.body
+      ? `>>> ${truncate(alert.body, EXCERPT_MAX_CHARS)}`
+      : '_(content not captured)_'
   );
 
   const payload = {
@@ -47,10 +52,16 @@ export async function sendDiscordAlert(webhookUrl: string, alert: QuickDeleteAle
                 },
               ]
             : []),
-          { name: 'Time alive', value: humanizeDuration(alert.lifetimeMs), inline: true },
+          {
+            name: 'Time alive',
+            value: humanizeDuration(alert.lifetimeMs),
+            inline: true,
+          },
           { name: 'Post', value: postShortlink(alert.postId), inline: true },
         ],
-        ...(alert.subredditName ? { footer: { text: `r/${alert.subredditName}` } } : {}),
+        ...(alert.subredditName
+          ? { footer: { text: `r/${alert.subredditName}` } }
+          : {}),
       },
     ],
   };
@@ -65,7 +76,9 @@ export async function sendDiscordAlert(webhookUrl: string, alert: QuickDeleteAle
       signal: controller.signal,
     });
     if (!response.ok) {
-      throw new Error(`Discord webhook responded ${response.status}: ${await response.text()}`);
+      throw new Error(
+        `Discord webhook responded ${response.status}: ${await response.text()}`
+      );
     }
   } finally {
     clearTimeout(timeout);

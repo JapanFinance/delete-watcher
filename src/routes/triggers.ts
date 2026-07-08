@@ -1,7 +1,16 @@
 import { Hono } from 'hono';
-import type { OnPostDeleteRequest, OnPostSubmitRequest, TriggerResponse } from '@devvit/web/shared';
+import type {
+  OnPostDeleteRequest,
+  OnPostSubmitRequest,
+  TriggerResponse,
+} from '@devvit/web/shared';
 import { redis } from '@devvit/web/server';
-import { countKey, DEDUPE_FIELD, DEDUPE_TTL_SECONDS, dedupeKey } from '../core/keys';
+import {
+  countKey,
+  DEDUPE_FIELD,
+  DEDUPE_TTL_SECONDS,
+  dedupeKey,
+} from '../core/keys';
 import { getAppSettings } from '../core/settings';
 import { loadSnapshot, saveSnapshot } from '../core/snapshot';
 import { evaluateDelete } from '../core/detect';
@@ -74,7 +83,9 @@ triggers.post('/on-post-delete', async (c) => {
 
   const authorId = event.author?.id ?? snapshot.authorId;
   const authorName = event.author?.name ?? snapshot.authorName;
-  const offenseCount = authorId ? await redis.incrBy(countKey(authorId), 1) : undefined;
+  const offenseCount = authorId
+    ? await redis.incrBy(countKey(authorId), 1)
+    : undefined;
   const subredditName = event.subreddit?.name;
 
   let attempted = 0;
@@ -94,7 +105,10 @@ triggers.post('/on-post-delete', async (c) => {
       });
       succeeded++;
     } catch (error) {
-      console.error(`on-post-delete: Discord alert failed for ${postId}`, error);
+      console.error(
+        `on-post-delete: Discord alert failed for ${postId}`,
+        error
+      );
     }
   }
 
@@ -122,7 +136,10 @@ triggers.post('/on-post-delete', async (c) => {
     if (authorId && offenseCount !== undefined) {
       await redis.incrBy(countKey(authorId), -1);
     }
-    return c.json({ status: 'error', message: `all actions failed for ${postId}` }, 500);
+    return c.json(
+      { status: 'error', message: `all actions failed for ${postId}` },
+      500
+    );
   }
 
   console.log(

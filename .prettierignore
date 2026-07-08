@@ -1,0 +1,2 @@
+# Generated / not ours to format (node_modules and dist are already covered via .gitignore)
+package-lock.json

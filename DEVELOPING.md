@@ -32,15 +32,19 @@ src/
 
 - `npm run dev` — playtest with live reload on a test subreddit (r/delete_watcher_dev)
 - `npm run type-check` / `npm run lint` — TypeScript and ESLint checks
+- `npm run format` — check Prettier formatting (CI runs this); `npm run prettier` to auto-fix
 - `npm run build` — build the server bundle
 - `npm run deploy` — upload a new version (type-check + lint + `devvit upload`)
 - `npm run launch` — submit for review and publish (`deploy` + `devvit publish`)
 
 ## Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs `npm ci`, `type-check`, `lint`, and
-`build` on every push to `main` and on every pull request. This is what validates
-Dependabot's dependency-bump PRs before merge.
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs `npm ci`, `type-check`, `lint`,
+`format` (Prettier `--check`), and `build` on every push to `main` and on every pull
+request. This is what validates Dependabot's dependency-bump PRs before merge.
+
+Line endings are pinned to LF via [`.gitattributes`](.gitattributes) so the Prettier
+check behaves identically locally (including on Windows) and in CI on Linux.
 
 **CI never uploads or publishes.** Deploying a new version to Reddit is a deliberate
 manual step (`npm run deploy` / `npm run launch`) so that a merged dependency bump

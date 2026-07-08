@@ -14,7 +14,9 @@ export async function addQuickDeleteModNote(options: {
   offenseCount: number;
   title?: string | undefined;
 }): Promise<void> {
-  const titlePart = options.title ? `: "${truncate(options.title, TITLE_MAX_CHARS)}"` : '';
+  const titlePart = options.title
+    ? `: "${truncate(options.title, TITLE_MAX_CHARS)}"`
+    : '';
   const note = truncate(
     `Self-deleted post after ${humanizeDuration(options.lifetimeMs)} (self-delete #${options.offenseCount})${titlePart}`,
     NOTE_MAX_CHARS

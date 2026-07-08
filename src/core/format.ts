@@ -26,7 +26,9 @@ export function postShortlink(postId: string): string {
  * Normalizes a timestamp that may arrive as an ISO-8601 string or as an epoch
  * number (seconds or milliseconds) into epoch milliseconds.
  */
-export function parseTimestampMs(value: string | number | undefined): number | undefined {
+export function parseTimestampMs(
+  value: string | number | undefined
+): number | undefined {
   if (value === undefined || value === '') {
     return undefined;
   }

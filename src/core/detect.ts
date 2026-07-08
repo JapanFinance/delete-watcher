@@ -2,8 +2,7 @@ import { EventSource } from '@devvit/web/shared';
 import { parseTimestampMs } from './format';
 
 export type DeleteEvaluation =
-  | { act: false; reason: string }
-  | { act: true; lifetimeMs: number };
+  { act: false; reason: string } | { act: true; lifetimeMs: number };
 
 /**
  * The trigger payload travels as JSON, so depending on the encoder the enum
@@ -23,11 +22,18 @@ export function evaluateDelete(input: {
   nowMs: number;
 }): DeleteEvaluation {
   if (!isUserSelfDelete(input.source)) {
-    return { act: false, reason: `not an author self-delete (source: ${String(input.source)})` };
+    return {
+      act: false,
+      reason: `not an author self-delete (source: ${String(input.source)})`,
+    };
   }
-  const createdAtMs = parseTimestampMs(input.eventCreatedAt) ?? input.snapshotCreatedAtMs;
+  const createdAtMs =
+    parseTimestampMs(input.eventCreatedAt) ?? input.snapshotCreatedAtMs;
   if (createdAtMs === undefined) {
-    return { act: false, reason: 'creation time unavailable from event and snapshot' };
+    return {
+      act: false,
+      reason: 'creation time unavailable from event and snapshot',
+    };
   }
   const deletedAtMs = parseTimestampMs(input.eventDeletedAt) ?? input.nowMs;
   const lifetimeMs = Math.max(0, deletedAtMs - createdAtMs);
