@@ -1,4 +1,4 @@
-# Quick-Delete Watch
+# Delete Watcher
 
 A Devvit mod tool that detects when a user creates a post and then **self-deletes it within a configurable window** (default: 24 hours). Built for r/JapanFinance.
 
@@ -8,10 +8,10 @@ Users sometimes post a question, collect answers, and delete the post — removi
 
 On every new post, the app snapshots the title and body. When a post is deleted, it checks *who* deleted it — only **author self-deletes** are considered; moderator and admin removals are ignored. If the post lived less than the detection window, the app:
 
-- **Sends a Discord webhook notification** with the author, what the post said, how long it was up, and the author's running quick-delete count
+- **Sends a Discord webhook notification** with the author, what the post said, how long it was up, and the author's running self-delete count
 - **Adds a mod note** (`SPAM_WATCH`) to the author so the pattern is visible in their mod-tools history
 
-Each author's quick-delete count is tracked persistently, so notifications read "Quick self-delete #3 by u/example".
+Each author's self-delete count is tracked persistently, so notifications read "Self-delete #3 by u/example".
 
 ## Settings (per subreddit)
 

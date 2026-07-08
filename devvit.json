@@ -1,6 +1,6 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "quick-del-watch",
+  "name": "delete-watcher",
   "server": {
     "dir": "dist/server",
     "entry": "index.cjs"
@@ -21,7 +21,7 @@
       "discordWebhookUrl": {
         "type": "string",
         "label": "Discord webhook URL",
-        "helpText": "Discord webhook to notify when a quick self-delete is detected. Leave empty to disable Discord notifications.",
+        "helpText": "Discord webhook to notify when a self-delete is detected. Leave empty to disable Discord notifications.",
         "defaultValue": "",
         "validationEndpoint": "/internal/settings/validate-webhook"
       },
@@ -51,8 +51,5 @@
         "discordapp.com"
       ]
     }
-  },
-  "dev": {
-    "subreddit": "quick_del_watch_dev"
   }
 }

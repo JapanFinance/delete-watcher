@@ -31,8 +31,8 @@ export async function sendDiscordAlert(webhookUrl: string, alert: QuickDeleteAle
       {
         title: truncate(
           alert.offenseCount !== undefined
-            ? `Quick self-delete #${alert.offenseCount} by u/${author}`
-            : `Quick self-delete by u/${author}`,
+            ? `Self-delete #${alert.offenseCount} by u/${author}`
+            : `Self-delete by u/${author}`,
           256
         ),
         description: descriptionParts.join('\n'),

@@ -16,7 +16,7 @@ export async function addQuickDeleteModNote(options: {
 }): Promise<void> {
   const titlePart = options.title ? `: "${truncate(options.title, TITLE_MAX_CHARS)}"` : '';
   const note = truncate(
-    `Self-deleted post after ${humanizeDuration(options.lifetimeMs)} (quick-delete #${options.offenseCount})${titlePart}`,
+    `Self-deleted post after ${humanizeDuration(options.lifetimeMs)} (self-delete #${options.offenseCount})${titlePart}`,
     NOTE_MAX_CHARS
   );
   await reddit.addModNote({
