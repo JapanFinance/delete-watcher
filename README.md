@@ -1,94 +1,54 @@
-# Devvit Mod Tool Template
+# Quick-Delete Watch
 
-A template for building Reddit moderation tools using Devvit web. This template provides a complete foundation for creating custom moderation tools with bulk comment management capabilities.
+A Devvit mod tool that detects when a user creates a post and then **self-deletes it within a configurable window** (default: 24 hours). Built for r/JapanFinance.
 
-## Features
+Users sometimes post a question, collect answers, and delete the post — removing context that would have helped future readers — or probe the community and delete before mods can review. This app surfaces that pattern to the mod team.
 
-This template includes a working mod tool called **"Mop"** that demonstrates:
+## What it does
 
-- **Bulk Comment Management**: Remove or lock multiple comments at once
-- **Thread-level Actions**: "Mop comments" - Remove/lock a comment and all its replies
-- **Post-level Actions**: "Mop post comments" - Remove/lock all comments on a post
-- **Flexible Options**:
-  - Remove comments, lock comments, or both
-  - Skip distinguished comments (moderator/admin posts)
-- **Permission Checks**: Only moderators with proper permissions can use the tool
-- **User-friendly Forms**: Interactive forms with clear options and validation
+On every new post, the app snapshots the title and body. When a post is deleted, it checks *who* deleted it — only **author self-deletes** are considered; moderator and admin removals are ignored. If the post lived less than the detection window, the app:
 
-## Tech Stack
+- **Sends a Discord webhook notification** with the author, what the post said, how long it was up, and the author's running quick-delete count
+- **Adds a mod note** (`SPAM_WATCH`) to the author so the pattern is visible in their mod-tools history
 
-- [Devvit](https://developers.reddit.com/): Reddit's platform for building and deploying apps
-- [Vite](https://vite.dev/): Fast build tool for the web components
-- [Hono](https://hono.dev/): Lightweight web framework for backend logic
-- [TypeScript](https://www.typescriptlang.org/): Type-safe development
+Each author's quick-delete count is tracked persistently, so notifications read "Quick self-delete #3 by u/example".
 
-## Getting Started
+## Settings (per subreddit)
 
-1. **Clone this template** or use it as a starting point for your mod tool
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-3. **Configure your app** in `devvit.json`:
-   - Update the app name
-   - Set your development subreddit
-4. **Start developing**:
-   ```bash
-   npm run dev
-   ```
-5. **Test your changes** in your development subreddit
+| Setting | Default | Description |
+|---|---|---|
+| Detection window (hours) | 24 | Flag posts self-deleted within this many hours of posting. Fractional values allowed (0.5 = 30 minutes). |
+| Discord webhook URL | *(empty)* | Webhook to notify. Empty disables Discord notifications. |
+| Send Discord notifications | on | Toggle the Discord action. |
+| Add a mod note to the author | on | Toggle the mod note action. |
 
-## Project Structure
+## Implementation notes
+
+- Devvit Web app (server only, no UI) based on the official [Mod Tool template](https://github.com/reddit/devvit-template-mod-tool-devvit-web): Hono server + `devvit.json`.
+- `onPostDelete`'s `source` field distinguishes author self-deletes (`USER`) from mod/admin removals.
+- Trigger delivery is at-least-once, so the delete handler atomically claims each post via `redis.hSetNX` **before** any side effect, and rolls the claim (and counter) back if every action fails, letting redelivery retry. See [LilSpazJoekp/discord-relay#7](https://github.com/LilSpazJoekp/discord-relay/pull/7) for the pattern's origin.
+- Snapshots live in Redis with a TTL of the detection window plus a 24h margin. If a snapshot is missing (post predates install, or the window was raised), detection still works from the event's own timestamps — the notification just says "(content not captured)".
 
 ```
 src/
-├── index.ts          # Main server setup with Hono routes
+├── index.ts             # Hono server setup
 ├── core/
-│   └── nuke.ts       # Core moderation logic for bulk operations
+│   ├── detect.ts        # Pure detection logic (source + window check)
+│   ├── snapshot.ts      # Post content snapshots in Redis
+│   ├── discord.ts       # Webhook embed
+│   ├── modnote.ts       # SPAM_WATCH mod note
+│   ├── settings.ts      # Typed settings access + validation rules
+│   ├── keys.ts          # Redis key schema
+│   └── format.ts        # Duration/truncation helpers
 └── routes/
-    ├── api.ts        # Public API endpoints
-    ├── forms.ts      # Form submission handlers
-    ├── menu.ts       # Context menu item handlers
-    └── triggers.ts   # App lifecycle triggers
+    ├── triggers.ts      # onPostSubmit / onPostDelete handlers
+    ├── settings.ts      # Settings validation endpoints
+    └── api.ts           # (unused) public API router
 ```
 
-## Customizing Your Mod Tool
+## Development
 
-This template is designed to be easily customizable:
-
-1. **Modify existing actions**: Edit the nuke functionality in `src/core/nuke.ts`
-2. **Add new menu items**: Update `devvit.json` and add handlers in `src/routes/menu.ts`
-3. **Create new forms**: Add form definitions and handlers in `src/routes/forms.ts`
-4. **Add API endpoints**: Extend `src/routes/api.ts` for external integrations
-
-## Commands
-
-- `npm run dev`: Starts development mode with live reload on your test subreddit
-- `npm run build`: Builds your mod tool for production
-- `npm run deploy`: Uploads a new version of your app to Reddit
-- `npm run launch`: Publishes your app for review and public use
-- `npm run login`: Authenticates your CLI with Reddit
-- `npm run type-check`: Runs TypeScript type checking, linting, and formatting
-
-## How It Works
-
-The template demonstrates Reddit mod tool development through the "Mop" feature:
-
-1. **Context Menu Integration**: Click on the Mod Shield icon in a comment to see custom mod actions
-2. **Permission Validation**: Automatically checks if the user has moderation permissions
-3. **Interactive Forms**: Presents options through Reddit's native form system
-4. **Reddit API**: Processes multiple comments using Reddit's API
-
-## Development Notes
-
-- **Permissions**: The app requires `reddit: true` permission to access Reddit's API
-- **User Types**: Menu items are restricted to `moderator` user type
-
-## Deployment
-
-1. Test thoroughly in your development subreddit
-2. Run `npm run deploy` to upload your app
-3. Use `npm run launch` to submit for Reddit's app review process
-4. Once approved, users can install your mod tool from Reddit's app directory
-
-This template provides everything you need to build powerful, user-friendly moderation tools for Reddit communities.
+- `npm run dev` — playtest with live reload on a test subreddit
+- `npm run type-check` / `npm run lint` — TypeScript and ESLint checks
+- `npm run deploy` — upload a new version
+- `npm run launch` — submit for review and publish
