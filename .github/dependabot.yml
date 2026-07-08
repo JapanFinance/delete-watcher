@@ -1,6 +1,15 @@
-# Dependabot configuration to update npm packages weekly
+# Dependabot configuration to keep npm packages and GitHub Actions up to date
 version: 2
 updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/' # Scans workflows under .github/workflows/
+    schedule:
+      interval: 'weekly'
+    groups:
+      actions:
+        patterns:
+          - '*'
+
   - package-ecosystem: 'npm'
     directory: '/' # Location of your package.json and package-lock.json
     schedule:
