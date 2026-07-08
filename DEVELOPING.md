@@ -57,9 +57,39 @@ It ignores `devvit@1.0.0` / `@devvit/*@1.0.0` — a stray/mistaken publish that 
 the real `0.13.x` line by semver. Do not merge a PR that bumps devvit to `1.0.0`; the
 current line is `0.13.x`.
 
-## Publishing
+## Releasing a new version
 
-Publishing is manual. `npm run launch` uploads and submits for Reddit review (unlisted,
-~1–2 business days). Once approved, install on the target subreddit from the
-[app page](https://developers.reddit.com/apps/delete-watcher) and set the detection
-window and mod-team webhook there.
+Releasing is a deliberate manual step. The **Devvit app version is owned by the Devvit
+CLI, not by `package.json`** — `package.json` is never published to npm and its `version`
+field is ignored, so leave it as-is. Each `devvit publish` triggers a Reddit review
+(~1–2 business days), so batch changes into infrequent releases rather than publishing
+per commit.
+
+Release from a commit that is already green on CI. `npm run deploy` / `launch` only run
+type-check + lint before uploading — they do **not** run `format` or `build` the way CI
+does — so relying on a green `main` is what guarantees the released build is clean.
+
+1. Make sure `main` is green in CI and checked out at the commit you want to ship.
+2. Pick the new version (semver `MAJOR.MINOR.PATCH`) and publish it explicitly so the
+   number is deterministic:
+   ```
+   npx devvit publish --version X.Y.Z
+   ```
+   (`--bump patch|minor|major` also works and defaults to `patch`, but an explicit
+   `--version` is easier to tag. Prerelease versions cannot be published.)
+3. Tag that exact commit and push the tag:
+   ```
+   git tag -a vX.Y.Z -m "Release X.Y.Z"
+   git push origin vX.Y.Z
+   ```
+4. Create a [GitHub Release](https://github.com/JapanFinance/delete-watcher/releases/new)
+   from the tag and use "Generate release notes" for the changelog. (GitHub Releases are
+   the changelog — there is no `CHANGELOG.md`.)
+
+Reddit review status is on the [app page](https://developers.reddit.com/apps/delete-watcher).
+
+### First install on a new subreddit
+
+Once a published version is approved, install it on the target subreddit from the
+[app page](https://developers.reddit.com/apps/delete-watcher), then set the detection
+window and mod-team Discord webhook in the app's settings.
