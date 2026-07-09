@@ -31,6 +31,7 @@ src/
 ## Commands
 
 - `npm run dev` — playtest with live reload on a test subreddit (r/delete_watcher_dev)
+- `npm test` — run the Vitest unit tests (`npm run test:watch` for watch mode)
 - `npm run type-check` / `npm run lint` — TypeScript and ESLint checks
 - `npm run format` — check Prettier formatting (CI runs this); `npm run prettier` to auto-fix
 - `npm run build` — build the server bundle
