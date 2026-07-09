@@ -6,8 +6,9 @@ Developer notes for this app. For what the app does and its settings, see the [R
 
 - Devvit Web app (server only, no UI) based on the official [Mod Tool template](https://github.com/reddit/devvit-template-mod-tool-devvit-web): Hono server + `devvit.json`.
 - `onPostDelete`'s `source` field distinguishes author self-deletes (`USER`) from mod/admin removals. It arrives as the numeric enum value on the wire (`1` = USER, `3` = MODERATOR), not the string name, so the handler matches both forms.
+- A self-delete that happens **after a mod has already removed the post** needs no special handling: verified in playtest that once a post is mod-removed, the author's subsequent delete emits **no** further `PostDelete` event — only the mod-removal event (`source: MODERATOR`) ever fires, and the handler skips it. There is therefore no `USER`-source event to mis-flag, so no `onModAction` tracking is needed.
 - Trigger delivery is at-least-once, so the delete handler atomically claims each post via `redis.hSetNX` **before** any side effect, and rolls the claim (and counter) back if every action fails, letting redelivery retry. See [LilSpazJoekp/discord-relay#7](https://github.com/LilSpazJoekp/discord-relay/pull/7) for the pattern's origin.
-- Snapshots live in Redis with a TTL of the detection window plus a 24h margin. If a snapshot is missing (post predates install, or the window was raised), detection still works from the event's own timestamps — the notification just says "(content not captured)".
+- Snapshots live in Redis with a TTL of the detection window plus a short buffer (~15 minutes) to cover trigger-delivery latency. If a snapshot is missing (post predates install, or the window was raised), detection still works from the event's own timestamps — the notification just says "(content not captured)".
 
 ## Project structure
 
