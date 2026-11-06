@@ -22,6 +22,11 @@ export function postShortlink(postId: string): string {
   return `https://redd.it/${postId.replace(/^t3_/, '')}`;
 }
 
+/** Link to the subreddit's banned users moderation tool in modern Reddit. */
+export function subredditBannedUrl(subredditName: string): string {
+  return `https://www.reddit.com/mod/${subredditName}/banned/`;
+}
+
 /**
  * Normalizes a timestamp that may arrive as an ISO-8601 string or as an epoch
  * number (seconds or milliseconds) into epoch milliseconds.
