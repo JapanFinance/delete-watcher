@@ -19,7 +19,7 @@ describe('buildDiscordAlertPayload', () => {
     expect(payload.embeds).toHaveLength(1);
 
     const embed = payload.embeds[0]!;
-    expect(embed.title).toBe('Self-delete #2 by u/test_user');
+    expect(embed.title).toBe('Self-delete #2 by u/`test_user`');
     expect('url' in embed).toBe(false);
     expect(embed.description).toContain(
       '**[Test Post Title](https://redd.it/123456)**'
@@ -53,7 +53,7 @@ describe('buildDiscordAlertPayload', () => {
       ...BASE_ALERT,
       offenseCount: undefined,
     });
-    expect(payload.embeds[0]!.title).toBe('Self-delete by u/test_user');
+    expect(payload.embeds[0]!.title).toBe('Self-delete by u/`test_user`');
   });
 
   it('falls back when authorName is undefined', () => {
@@ -62,7 +62,7 @@ describe('buildDiscordAlertPayload', () => {
       authorName: undefined,
     });
     const embed = payload.embeds[0]!;
-    expect(embed.title).toBe('Self-delete #2 by u/unknown author');
+    expect(embed.title).toBe('Self-delete #2 by unknown author');
     expect(embed.fields.find((f) => f.name === 'Author')).toBeUndefined();
     expect(embed.fields.find((f) => f.name === 'Mod tools')?.value).toBe(
       '[Ban user](https://www.reddit.com/mod/JapanFinance/banned/)'

@@ -20,7 +20,9 @@ export type QuickDeleteAlert = {
 };
 
 export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
-  const author = alert.authorName ?? 'unknown author';
+  const authorDisplay = alert.authorName
+    ? `u/\`${alert.authorName}\``
+    : 'unknown author';
   const postUrl = postShortlink(alert.postId);
   const descriptionParts: string[] = [];
 
@@ -48,16 +50,16 @@ export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
     }
   }
 
+  const titleText =
+    alert.offenseCount !== undefined
+      ? `Self-delete #${alert.offenseCount} by ${authorDisplay}`
+      : `Self-delete by ${authorDisplay}`;
+
   return {
     allowed_mentions: { parse: [] },
     embeds: [
       {
-        title: truncate(
-          alert.offenseCount !== undefined
-            ? `Self-delete #${alert.offenseCount} by u/${author}`
-            : `Self-delete by u/${author}`,
-          256
-        ),
+        title: truncate(titleText, 256),
         description: descriptionParts.join('\n'),
         color: EMBED_COLOR_WARNING_ORANGE,
         fields: [
