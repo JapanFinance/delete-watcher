@@ -1,4 +1,9 @@
-import { humanizeDuration, postShortlink, truncate } from './format';
+import {
+  humanizeDuration,
+  postShortlink,
+  subredditBannedUrl,
+  truncate,
+} from './format';
 
 const EXCERPT_MAX_CHARS = 500;
 const FETCH_TIMEOUT_MS = 5000;
@@ -14,23 +19,30 @@ export type QuickDeleteAlert = {
   subredditName?: string | undefined;
 };
 
-/** Throws on network failure or non-2xx so the caller can count the action as failed. */
-export async function sendDiscordAlert(
-  webhookUrl: string,
-  alert: QuickDeleteAlert
-): Promise<void> {
+function escapeLinkText(text: string): string {
+  return text.replace(/[[\]\\]/g, '\\$&');
+}
+
+export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
   const author = alert.authorName ?? 'unknown author';
+  const postUrl = postShortlink(alert.postId);
   const descriptionParts: string[] = [];
+
   if (alert.title) {
-    descriptionParts.push(`**${truncate(alert.title, 250)}**`);
+    descriptionParts.push(
+      `**[${escapeLinkText(truncate(alert.title, 250))}](${postUrl})**`
+    );
+  } else {
+    descriptionParts.push(`**[${postUrl}](${postUrl})**`);
   }
+
   descriptionParts.push(
     alert.body
       ? `>>> ${truncate(alert.body, EXCERPT_MAX_CHARS)}`
       : '_(content not captured)_'
   );
 
-  const payload = {
+  return {
     allowed_mentions: { parse: [] },
     embeds: [
       {
@@ -40,6 +52,7 @@ export async function sendDiscordAlert(
             : `Self-delete by u/${author}`,
           256
         ),
+        url: postUrl,
         description: descriptionParts.join('\n'),
         color: EMBED_COLOR_WARNING_ORANGE,
         fields: [
@@ -47,7 +60,7 @@ export async function sendDiscordAlert(
             ? [
                 {
                   name: 'Author',
-                  value: `[u/${alert.authorName}](https://www.reddit.com/user/${alert.authorName})`,
+                  value: `[u/${alert.authorName}](https://www.reddit.com/user/${alert.authorName})\n\`${alert.authorName}\``,
                   inline: true,
                 },
               ]
@@ -57,7 +70,15 @@ export async function sendDiscordAlert(
             value: humanizeDuration(alert.lifetimeMs),
             inline: true,
           },
-          { name: 'Post', value: postShortlink(alert.postId), inline: true },
+          ...(alert.subredditName
+            ? [
+                {
+                  name: 'Mod tools',
+                  value: `[Ban user](${subredditBannedUrl(alert.subredditName)})`,
+                  inline: true,
+                },
+              ]
+            : []),
         ],
         ...(alert.subredditName
           ? { footer: { text: `r/${alert.subredditName}` } }
@@ -65,6 +86,14 @@ export async function sendDiscordAlert(
       },
     ],
   };
+}
+
+/** Throws on network failure or non-2xx so the caller can count the action as failed. */
+export async function sendDiscordAlert(
+  webhookUrl: string,
+  alert: QuickDeleteAlert
+): Promise<void> {
+  const payload = buildDiscordAlertPayload(alert);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
