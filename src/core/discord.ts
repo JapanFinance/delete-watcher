@@ -19,19 +19,13 @@ export type QuickDeleteAlert = {
   subredditName?: string | undefined;
 };
 
-function escapeLinkText(text: string): string {
-  return text.replace(/[[\]\\]/g, '\\$&');
-}
-
 export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
   const author = alert.authorName ?? 'unknown author';
   const postUrl = postShortlink(alert.postId);
   const descriptionParts: string[] = [];
 
   if (alert.title) {
-    descriptionParts.push(
-      `**[${escapeLinkText(truncate(alert.title, 250))}](${postUrl})**`
-    );
+    descriptionParts.push(`**[${truncate(alert.title, 250)}](${postUrl})**`);
   } else {
     descriptionParts.push(`**[${postUrl}](${postUrl})**`);
   }
@@ -41,6 +35,18 @@ export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
       ? `>>> ${truncate(alert.body, EXCERPT_MAX_CHARS)}`
       : '_(content not captured)_'
   );
+
+  const modToolsParts: string[] = [];
+  if (alert.subredditName) {
+    modToolsParts.push(
+      `[Ban user](${subredditBannedUrl(alert.subredditName)})`
+    );
+    if (alert.authorName) {
+      modToolsParts.push(
+        `[Profile](https://www.reddit.com/user/${alert.authorName})`
+      );
+    }
+  }
 
   return {
     allowed_mentions: { parse: [] },
@@ -52,7 +58,6 @@ export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
             : `Self-delete by u/${author}`,
           256
         ),
-        url: postUrl,
         description: descriptionParts.join('\n'),
         color: EMBED_COLOR_WARNING_ORANGE,
         fields: [
@@ -60,7 +65,7 @@ export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
             ? [
                 {
                   name: 'Author',
-                  value: `[u/${alert.authorName}](https://www.reddit.com/user/${alert.authorName})\n\`${alert.authorName}\``,
+                  value: alert.authorName,
                   inline: true,
                 },
               ]
@@ -70,11 +75,11 @@ export function buildDiscordAlertPayload(alert: QuickDeleteAlert) {
             value: humanizeDuration(alert.lifetimeMs),
             inline: true,
           },
-          ...(alert.subredditName
+          ...(modToolsParts.length > 0
             ? [
                 {
                   name: 'Mod tools',
-                  value: `[Ban user](${subredditBannedUrl(alert.subredditName)})`,
+                  value: modToolsParts.join(' • '),
                   inline: true,
                 },
               ]

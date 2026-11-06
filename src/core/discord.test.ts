@@ -20,7 +20,7 @@ describe('buildDiscordAlertPayload', () => {
 
     const embed = payload.embeds[0]!;
     expect(embed.title).toBe('Self-delete #2 by u/test_user');
-    expect(embed.url).toBe('https://redd.it/123456');
+    expect('url' in embed).toBe(false);
     expect(embed.description).toContain(
       '**[Test Post Title](https://redd.it/123456)**'
     );
@@ -31,8 +31,7 @@ describe('buildDiscordAlertPayload', () => {
     expect(embed.fields).toEqual([
       {
         name: 'Author',
-        value:
-          '[u/test_user](https://www.reddit.com/user/test_user)\n`test_user`',
+        value: 'test_user',
         inline: true,
       },
       {
@@ -42,7 +41,8 @@ describe('buildDiscordAlertPayload', () => {
       },
       {
         name: 'Mod tools',
-        value: '[Ban user](https://www.reddit.com/mod/JapanFinance/banned/)',
+        value:
+          '[Ban user](https://www.reddit.com/mod/JapanFinance/banned/) • [Profile](https://www.reddit.com/user/test_user)',
         inline: true,
       },
     ]);
@@ -64,6 +64,9 @@ describe('buildDiscordAlertPayload', () => {
     const embed = payload.embeds[0]!;
     expect(embed.title).toBe('Self-delete #2 by u/unknown author');
     expect(embed.fields.find((f) => f.name === 'Author')).toBeUndefined();
+    expect(embed.fields.find((f) => f.name === 'Mod tools')?.value).toBe(
+      '[Ban user](https://www.reddit.com/mod/JapanFinance/banned/)'
+    );
   });
 
   it('omits mod tools and footer when subredditName is undefined', () => {
@@ -96,13 +99,13 @@ describe('buildDiscordAlertPayload', () => {
     );
   });
 
-  it('escapes square brackets in post title to preserve markdown link formatting', () => {
+  it('preserves square brackets in post title without raw escaping artifacts', () => {
     const payload = buildDiscordAlertPayload({
       ...BASE_ALERT,
       title: '[Tax] Selling US [stocks] in Japan',
     });
     expect(payload.embeds[0]!.description).toContain(
-      '**[\\[Tax\\] Selling US \\[stocks\\] in Japan](https://redd.it/123456)**'
+      '**[[Tax] Selling US [stocks] in Japan](https://redd.it/123456)**'
     );
   });
 
