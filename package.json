@@ -25,7 +25,7 @@
     "@devvit/start": "0.15.2",
     "@devvit/web": "0.15.2",
     "@hono/node-server": "^2.1.6",
-    "devvit": "0.15.2",
+    "devvit": "1.0.0",
     "hono": "4.13.16"
   },
   "devDependencies": {
