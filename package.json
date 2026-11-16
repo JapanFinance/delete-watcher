@@ -21,11 +21,11 @@
     "node": ">=22.2.0"
   },
   "dependencies": {
-    "@devvit/public-api": "0.15.2",
-    "@devvit/start": "0.15.2",
-    "@devvit/web": "0.15.2",
+    "@devvit/public-api": "0.15.3",
+    "@devvit/start": "0.15.3",
+    "@devvit/web": "0.15.3",
     "@hono/node-server": "^2.1.6",
-    "devvit": "0.15.2",
+    "devvit": "0.15.3",
     "hono": "4.13.16"
   },
   "devDependencies": {
